@@ -33,6 +33,7 @@ fn main() {
         4 => solutions::Day4{}.solve(),
         5 => solutions::Day5{}.solve(),
         6 => solutions::Day6{}.solve(),
+        7 => solutions::Day7{}.solve(),
         _ => println!("No solution for day {}", args.day)
     }
 }
