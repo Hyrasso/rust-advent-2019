@@ -156,18 +156,5 @@ impl Solution for Day7 {
             }));
             progs.into_iter().for_each(|t| t.join().unwrap());
         }
-        // let mut max_sig = 0;
-        // for perm in (5..10).permutations(5) {
-        //     let (tx, rx) = mpsc::channel();
-        //     let mut r = run(&text, vec![perm[0], 0]);
-        //     r = run(&text, vec![perm[1], r]);
-        //     r = run(&text, vec![perm[2], r]);
-        //     r = run(&text, vec![perm[3], r]);
-        //     r = run(&text, vec![perm[4], r]);
-        //     if r >= max_sig {
-        //         max_sig = r;
-        //     }
-        // }
-        // println!("{}", max_sig);
     }
 }
