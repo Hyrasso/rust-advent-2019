@@ -3,15 +3,15 @@ mod solutions;
 use crate::solutions::Solution;
 
 struct Args {
-    day: i32,
-    input_file: String,
+    day: Option<i32>,
+    input_file: Option<String>,
 }
 
 fn parse_args(mut acc: Args, args: &[String]) -> Args {
     assert_eq!(args.len(), 2);
     match args[0].as_str() {
-        "-d" | "--day" => acc.day = args[1].parse::<i32>().unwrap(),
-        "-i" | "--input" => acc.input_file = args[1].clone(),
+        "-d" | "--day" => acc.day = args[1].parse::<i32>().ok(),
+        "-i" | "--input" => acc.input_file = Some(args[1].clone()),
         _ => println!("Unknown argument {:?}", &args[0])
     }
     acc
@@ -20,20 +20,23 @@ fn parse_args(mut acc: Args, args: &[String]) -> Args {
 fn main() {
     let arg_list : Vec<_> = env::args().collect();
     let arguments = Args{
-        day: 0,
-        input_file: "".to_string()
+        day: None,
+        input_file: None
     };
 
     let args: Args = arg_list[1..].chunks(2).fold(arguments, parse_args);
     match args.day {
-        0 => solutions::Day0{solution: "Day 0?"}.solve(),
-        1 => solutions::Day1{}.solve(),
-        2 => solutions::Day2{}.solve(),
-        3 => solutions::Day3{}.solve(),
-        4 => solutions::Day4{}.solve(),
-        5 => solutions::Day5{}.solve(),
-        6 => solutions::Day6{}.solve(),
-        7 => solutions::Day7{}.solve(),
-        _ => println!("No solution for day {}", args.day)
+        None => solutions::Day0{solution: "Day 0?"}.solve(),
+        Some(1) => solutions::Day1{}.solve(),
+        Some(2) => solutions::Day2{}.solve(),
+        Some(3) => solutions::Day3{}.solve(),
+        Some(4) => solutions::Day4{}.solve(),
+        Some(5) => solutions::Day5{}.solve(),
+        Some(6) => solutions::Day6{}.solve(),
+        Some(7) => solutions::Day7{}.solve(),
+        Some(8) => solutions::Day8{
+            file: args.input_file.unwrap_or(format!("inputs/8-1.txt"))
+        }.solve(),
+        Some(i) => println!("No solution for day {}", i)
     }
 }
