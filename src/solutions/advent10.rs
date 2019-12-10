@@ -1,6 +1,7 @@
 use std::fs;
 use crate::solutions::Solution;
 use std::collections::HashSet;
+use std::cmp::Ordering;
 
 pub struct Day10 {
     pub file: String
@@ -12,18 +13,25 @@ struct Point {
     y: i32
 }
 
+impl PartialOrd for Point {
+    fn partial_cmp(&self, other: &Point) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for Point {
+    fn cmp(&self, other: &Point) -> Ordering {
+        (self.y as f64).atan2(self.x as f64).partial_cmp(
+            &(other.y as f64).atan2(other.x as f64)
+        ).unwrap()
+    }
+}
+
 impl Point {
     fn add(&self, other: &Point) -> Point {
         Point {
             x: self.x + other.x,
             y: self.y + other.y
-        }
-    }
-
-    fn mul(&self, other: &Point) -> Point {
-        Point {
-            x: self.x * other.x,
-            y: self.y * other.y
         }
     }
 
@@ -97,36 +105,36 @@ impl Solution for Day10 {
             }
         }
         println!("Size {} {}", width, height);
-        println!("Map {:?}", asteroids);
-        let mut max_count = 0;
+        // println!("Map {:?}", asteroids);
         // best 11, 19
-        for start in asteroids.iter() {
+        let mut destroyed = HashSet::new();
+        // for start in vec![Point {x: 11, y: 19}] {
+        for start in vec![Point {x: 11, y: 13}] {
             // clockwise, symetric
-            
-            let mut seen = HashSet::new();
-            for quadrant in 0..4 {
-                // println!("Direction: {:?}", dir);
-                for point in farey(height).into_iter()
-                            .chain(farey(width).into_iter().rev().map(|p| p.sym()))
-                            .map(|p| p.rotate(quadrant)) {
-                    let mut ray_vec = point;
-                    while start.add(&ray_vec).is_inside(&limit) {
-                        if asteroids.contains(&start.add(&ray_vec)) {
-                            seen.insert(start.add(&ray_vec));
-                            // println!("{:?} {:?}", point, start.add(&ray_vec));
-                            break;
+            while asteroids.len() > 1 {
+                for quadrant in vec![3, 0, 1, 2] {
+                    eprintln!("Quadrant {}", quadrant);
+                    let skip_start = if destroyed.len() == 0 { 0 } else { 1 };
+                    for point in farey(height).into_iter()
+                                .chain(farey(width).into_iter().skip(skip_start).rev().skip(1).map(|p| p.sym()))
+                                .map(|p| p.rotate(quadrant))
+                                .rev() {
+                        let mut ray_vec = point;
+                        // eprintln!("Dir {:?}", point);
+                        while start.add(&ray_vec).is_inside(&limit) {
+                            if asteroids.contains(&start.add(&ray_vec)) {
+                                let asteroid = start.add(&ray_vec);
+                                eprintln!("Destroyed {:?} {} {:?}", point, destroyed.len() + 1, asteroid);
+                                asteroids.remove(&asteroid);
+                                assert_eq!(destroyed.insert(asteroid), true);
+                                break;
+                            }
+                            ray_vec = ray_vec.add(&point);
                         }
-                        ray_vec = ray_vec.add(&point);
                     }
                 }
-            }
-            if seen.len() > max_count {
-                max_count = seen.len();
-                if max_count == 253 {
-                    println!("{:?}", start);
-                }
+                println!("{:?}", destroyed.len());
             }
         }
-        println!("{}", max_count);
     }
 }
