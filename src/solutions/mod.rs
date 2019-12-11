@@ -20,6 +20,9 @@ pub use self::advent9::Day9;
 mod advent9;
 pub use self::advent10::Day10;
 mod advent10;
+pub use self::advent11::Day11;
+mod advent11;
+
 
 pub trait Solution {
     fn solve(&self);
