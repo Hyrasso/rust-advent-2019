@@ -104,53 +104,38 @@ impl Solution for Day7 {
     fn solve(&self) {
         let text = fs::read_to_string("inputs/7-1.txt").expect("Error while opening input");
         for perm in (5..10).permutations(5) {
-            let mpsc0 = mpsc::channel();
-            let mpsc1 = mpsc::channel();
-            let mpsc2 = mpsc::channel();
-            let mpsc3 = mpsc::channel();
-            let mpsc4 = mpsc::channel();
+            let mut senders = vec![];
+            let mut receivers = vec![];
+            for _ in 0..5 {
+                let (tx, rx) = mpsc::channel();
+                senders.push(tx);
+                receivers.push(rx);
+            }
             // phase config
-            mpsc0.0.send(perm[0]).unwrap();
-            mpsc1.0.send(perm[1]).unwrap();
-            mpsc2.0.send(perm[2]).unwrap();
-            mpsc3.0.send(perm[3]).unwrap();
-            mpsc4.0.send(perm[4]).unwrap();
+            senders[0].send(perm[0]).unwrap();
+            senders[1].send(perm[1]).unwrap();
+            senders[2].send(perm[2]).unwrap();
+            senders[3].send(perm[3]).unwrap();
+            senders[4].send(perm[4]).unwrap();
             // init input
-            let itx0 = mpsc::Sender::clone(&mpsc0.0);
+            let itx0 = mpsc::Sender::clone(&senders[0]);
             itx0.send(0).unwrap();
             let mut progs = vec![];
             // Amp A
-            let instr = text.clone();
-            let irx = mpsc0.1;
-            let otx = mpsc1.0;
-            progs.push(thread::spawn(move || {
-                run(&instr, irx, otx);
-            }));
-            // Amp B
-            let instr = text.clone();
-            let irx = mpsc1.1;
-            let otx = mpsc2.0;
-            progs.push(thread::spawn(move || {
-                run(&instr, irx, otx);
-            }));
-            // Amp C
-            let instr = text.clone();
-            let irx = mpsc2.1;
-            let otx = mpsc3.0;
-            progs.push(thread::spawn(move || {
-                run(&instr, irx, otx);
-            }));
-            // Amp D
-            let instr = text.clone();
-            let irx = mpsc3.1;
-            let otx = mpsc4.0;
-            progs.push(thread::spawn(move || {
-                run(&instr, irx, otx);
-            }));
+            for _ in 0..4 {
+                let instr = text.clone();
+                // found how to take ownership of vec element 
+                // finally, loops are great
+                let irx = receivers.remove(0);
+                let otx = senders.remove(1);
+                progs.push(thread::spawn(move || {
+                    run(&instr, irx, otx);
+                }));
+            }
             // Amp E
             let instr = text.clone();
-            let irx = mpsc4.1;
-            let otx = mpsc0.0;
+            let irx = receivers.remove(0);
+            let otx = senders.remove(0);
             progs.push(thread::spawn(move || {
                 run(&instr, irx, otx);
             }));
