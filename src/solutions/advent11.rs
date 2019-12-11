@@ -19,6 +19,7 @@ enum IntcodeStepResult {
     HALT
 }
 
+#[derive(Debug)]
 enum Color {
     BLACK,
     WHITE,
@@ -48,8 +49,8 @@ impl Intcode {
     }
 
     fn set(&mut self, addr: usize, value: i128) {
-        if addr > self.program.len() {
-            self.program.extend(iter::repeat(0).take(addr - self.program.len()));
+        if addr >= self.program.len() {
+            self.program.extend(iter::repeat(0).take(addr - self.program.len() + 1));
         }
         self.program[addr] = value;
     }
@@ -165,7 +166,7 @@ impl Solution for Day11 {
         let mut intcode = Intcode::new(&text);
         
         let mut map = HashMap::new();
-        // map.insert((0, 0), Color::WHITE)
+        map.insert((0, 0), Color::WHITE);
         let mut pos = (0, 0);
         let mut dir = 0; // start up
         let mut painting = true;
@@ -204,6 +205,21 @@ impl Solution for Day11 {
                 _ => ()
             }
         }
-        println!("{}", map.len());
+        // println!("{}", map.len());
+        let (width, height) = (50, 6);
+        let mut im = vec!["  "; width * height];
+        for (k, v) in map.iter() {
+            // println!("{:?}: {:?}", k, v);
+            im[(k.0 + -k.1 * width as i32) as usize] = match v {
+                Color::BLACK => "  ",
+                Color::WHITE => "██"
+            };
+        }
+        for line in im.chunks(width) {
+            for c in line {
+                print!("{}", c);
+            }
+            println!("");
+        }
     }
 }
