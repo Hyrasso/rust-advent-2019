@@ -22,6 +22,8 @@ pub use self::advent10::Day10;
 mod advent10;
 pub use self::advent11::Day11;
 mod advent11;
+pub use self::advent12::Day12;
+mod advent12;
 
 
 pub trait Solution {

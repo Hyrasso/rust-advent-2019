@@ -46,6 +46,9 @@ fn main() {
         Some(11) => solutions::Day11 {
             file: args.input_file.unwrap_or(format!("inputs/11-1.txt"))
         }.solve(),
+        Some(12) => solutions::Day12 {
+            file: args.input_file.unwrap_or(format!("inputs/{}-1.txt", args.day.unwrap()))
+        }.solve(),
         Some(i) => println!("No solution for day {}", i)
     }
 }
