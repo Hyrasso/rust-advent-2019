@@ -19,7 +19,7 @@ enum IntcodeStepResult {
     HALT
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 enum Tile {
     EMPTY,
     WALL,
@@ -62,7 +62,7 @@ impl Intcode {
         (self.get(self.ip) / 100, self.get(self.ip) % 100)
     }
 
-    fn step(&mut self) -> Option<IntcodeStepResult> {
+    fn step(&mut self, input: i128) -> Option<IntcodeStepResult> {
         let (mode, op) = self.get_mode_op();
         // eprintln!("D {}: {}", ip, op);
         match op {
@@ -80,10 +80,9 @@ impl Intcode {
             },
             // Get input -> a
             3 => {
-                panic!("No input provided");
-                // let idests = self.get_addrs(mode, 1);
-                // self.set(idests[0], 0);
-                // self.ip += 2;
+                let idests = self.get_addrs(mode, 1);
+                self.set(idests[0], input);
+                self.ip += 2;
             },
             // set output -> a 
             4 => {
@@ -163,19 +162,46 @@ impl Solution for Day13 {
         
         let mut map = HashMap::new();
         let mut output = vec![];
+        let mut score = -1;
+        let mut paddle = 0;
+        let mut ball = 0;
         loop {
-            let res = intcode.step();
+            let res = intcode.step(i128::signum(ball - paddle));
             match res {
                 Some(IntcodeStepResult::OUTPUT(i)) => output.push(i),
                 Some(IntcodeStepResult::HALT) => break,
                 None => ()
             }
             if output.len() == 3 {
-                map.insert((output[0], output[1]), output[2]);
+                let pos = (output[0], output[1]);
+                if pos == (-1, 0) {
+                    score = output[2];
+                } else {
+                    let tile = match output[2] {
+                        0 => Tile::EMPTY,
+                        1 => Tile::WALL,
+                        2 => Tile::BLOCK,
+                        3 => {
+                            paddle = pos.0;
+                            Tile::PADDLE
+                        },
+                        4 => {
+                            ball = pos.0;
+                            Tile::BALL
+                        },
+                        i => panic!("Unknown tile {}", i)
+                    };
+                    map.insert(pos, tile);
+                }
                 output.clear();
             }
+            if !map.iter().any(|(_k, v)| v == &Tile::BLOCK) && map.len() > 2022 {
+                println!("Blocks left {}", map.iter().filter(|(_k, v)| *v == &Tile::BLOCK).count());
+                break;
+            }
         }
-        println!("{:?}", intcode.program);
-        println!("{}", map.iter().filter(|(_k, v)| *v == &2i128).count());
+        // println!("{:?}", intcode.program);
+        println!("Blocks left {}", map.iter().filter(|(_k, v)| *v == &Tile::BLOCK).count());
+        println!("{:?}", score);
     }
 }
